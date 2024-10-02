@@ -1,0 +1,5 @@
+1 - heuristique de construction d'une solution 0
+2 - heuristique de recherche locale (décente/ppd)
+3 - experimentation sur au - 10 instances tests, z et CPUt
+4 - solution optiomales avec JUMP, z et CPUt
+5 - rapporter les résultats en Latex
