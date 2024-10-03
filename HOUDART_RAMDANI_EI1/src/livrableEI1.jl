@@ -63,8 +63,11 @@ function heuristique_gloutonne(C, A)
     n = length(C)  # Nombre de variables
     m = size(A, 1)  # Nombre de contraintes
     
-    # Initialiser la solution S à 0 (aucune variable n'est sélectionnée)
+    # Initialiser la solution S à 0 (aucune variable n'est sélectionnée dans les ensembles)
     S = zeros(Int, m)
+    
+    # Initialiser le tableau V à 0 (aucune variable sélectionnée au départ)
+    V = zeros(Int, n)
     
     # Calculer les valeurs pondérées pour chaque variable
     valeurs_pondérées = calculer_valeurs_pondérées(C, A)
@@ -89,9 +92,13 @@ function heuristique_gloutonne(C, A)
                 end
             end
             
+            # Mettre à jour le tableau V en positionnant 1 à l'emplacement j_meilleur
+            V[j_meilleur] = 1
+            
             # Ajouter le coefficient correspondant au poids total
             poids_total += C[j_meilleur]
             println("Poids total actuel de la solution : ", poids_total)
+            println("Tableau V : ", V)
         else
             println("Chevauchement détecté pour x$j_meilleur. Non ajouté à la solution.")
         end
@@ -100,7 +107,7 @@ function heuristique_gloutonne(C, A)
         valeurs_pondérées[j_meilleur] = -1
     end
     
-    return S, poids_total
+    return S, V, poids_total
 end
 
 # Fonction principale pour résoudre le problème avec affichage détaillé
@@ -115,10 +122,11 @@ function resoudreSPP(fname)
     println(C)
     
     # Construire une solution réalisable x0 avec l'heuristique gloutonne
-    solution, poids_total = heuristique_gloutonne(C, A)
+    solution, tableauV, poids_total = heuristique_gloutonne(C, A)
     
-    # Afficher la solution et le poids total
+    # Afficher la solution, le tableau V, et le poids total
     println("\n=== Résultat final ===")
-    println("Solution initiale x0 : ", solution)
+    println("Solution initiale x0 (ensembles) : ", solution)
+    println("Tableau V des variables sélectionnées : ", tableauV)
     println("Poids total de la solution : ", poids_total)
 end
