@@ -27,13 +27,16 @@ function test(C, A, solutionATester, scoreABattre)
                 score += C[i]
             end
         end
-        return(["O",solutionATester,score])
+        if score > scoreABattre
+            return(["O",solutionATester,score])
+        else
+            return(["N",[],0])
+        end
     else
         return(["N",[],0])
     end
 end
             
-
 function decente(C, A, solutionx0,score)
     solutiondepart = copy(solutionx0)
     solutionTrouvee = true
