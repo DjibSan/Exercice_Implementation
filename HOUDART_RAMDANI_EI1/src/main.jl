@@ -15,8 +15,8 @@ include("decente.jl")
 
 ## Loading a SPP instance
 #println("\nLoading...")
-#fname = "dat/didacticSPP.dat"
-#C, A = loadSPP(fname)
+fname = "dat/pb_200rnd0100.dat"
+C, A = loadSPP(fname)
 #@show C
 #@show A
 #
@@ -36,7 +36,7 @@ include("decente.jl")
 #solverSelected = GLPK.Optimizer
 #spp = setSPP(C, A)
 #println(spp)
-##
+#
 #set_optimizer(spp, solverSelected)
 #optimize!(spp)
 #
@@ -64,6 +64,7 @@ for i = 1:size(fnames)[1]
         tblUse,score = decente(C,A,tblUse,score)
     end
     tps2 = @elapsed begin
+        spp = setSPP(C, A)
         set_optimizer(spp, solverSelected)
         optimize!(spp)
     end
@@ -77,6 +78,7 @@ end
 for i = 1:size(fnames)[1]
     println("Pour le fichier "*fnames[i]*"\nSans GLPK\n- Glouton + décente : ", table_CPUtime[i], " secondes\n- Z : ",table_z[i])
     println("Avec GLPK\n- Glouton + décente : ", table_CPUtime2[i], " secondes\n- Z : ",table_z2[i])
+    println("\n")
 end
 
 
