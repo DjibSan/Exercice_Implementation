@@ -4,7 +4,8 @@
 function setSPP(C, A)
     m, n = size(A)
     spp = Model()
-    @variable(spp, x[1:n], Bin)
+    #@variable(spp, x[1:n], Bin)
+    @variable(spp, 0 <= x[1:n] <= 1)
     @objective(spp, Max, dot(C, x))
     @constraint(spp , cte[i=1:m], sum(A[i,j] * x[j] for j=1:n) <= 1)
     return spp

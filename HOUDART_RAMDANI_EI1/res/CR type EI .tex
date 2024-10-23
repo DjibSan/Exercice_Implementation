@@ -1,0 +1,98 @@
+% Document : compte rendu des DM
+% Auteur : Xavier Gandibleux
+% Année académique : 2020-2021
+
+\documentclass[a4paper,10pt]{article}
+
+
+% passe en mode large sur la page A4
+\usepackage{a4wide} 
+
+% document francisé
+\usepackage[francais]{babel} 
+
+% permet la frappe de caracteres accentues (sur macOS)
+\usepackage[utf8x]{inputenc} 
+
+
+% individualisation des parametres de la page
+\parskip8pt
+\setlength{\topmargin}{-25mm}
+\setlength{\textheight}{250mm}
+
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+\usepackage{listings} % Charger le package listings une seule fois
+\usepackage{xcolor} % Pour les couleurs
+
+
+\lstdefinelanguage{Julia}{
+    keywords={abstract,break,case,catch,const,continue,do,else,elseif,end,export,false,for,function,immutable,import,importall,if,in,macro,module,otherwise,quote,return,switch,true,try,type,typealias,using,while},
+    sensitive=true,
+    alsoother={\$},
+    morecomment=[l]\#,
+    morecomment=[n]{\#=}{=\#},
+    morestring=[b]',
+    morestring=[b]"
+}
+\lstset{
+    language=Julia, % Choisir le langage utilisé
+    basicstyle=\ttfamily\small, % Style de base du texte
+    numbers=left, % Numérotation des lignes sur la gauche
+    numberstyle=\tiny\color{gray}, % Style des numéros de ligne
+    keywordstyle=\color{blue}, % Style des mots-clés
+    commentstyle=\color{green}, % Style des commentaires
+    stringstyle=\color{red}, % Style des chaînes de caractères
+    frame=single, % Encadrer le code
+    breaklines=true, % Retour à la ligne automatique
+    tabsize=4 % Taille des tabulations
+}
+\begin{document}
+
+~
+\vspace{50mm}
+{\large
+\begin{center}
+  Nantes Université --- UFR Sciences et Techniques\\
+  Master informatique\\
+  Année académique 2024-2025
+  \vspace{30mm}
+ 
+  { \LARGE
+ 
+     Dossier Exercice d'implémentation\\
+     \vspace{5mm}
+ 
+     {\huge \textbf{Métaheuristiques}}
+     \vspace{5mm}
+ 
+     Xavier \textsc{HOUDART}%$^1$ --  Prénom \textsc{Nom}$^2$
+     
+     Djibril \textsc{RAMDANI}%$^1$ --  Prénom \textsc{Nom}$^2$
+     \vspace{50mm}
+  
+     \today
+  }  
+\end{center}
+}
+
+\vfill
+\break
+
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+\input{CR_EI1.tex} 
+
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+%\input{cr_ei2.tex}  % decommenter lors de la composition du EI2
+
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+%\input{cr_ei3.tex} % decommenter lors de la composition du EI3
+
+
+
+\end{document}
+
