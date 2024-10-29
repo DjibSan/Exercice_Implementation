@@ -12,17 +12,24 @@ include("construtionX0.jl")
 include("decente.jl")
 include("GRASP.jl")
 include("methodes.jl")
+include("reactiveGRASP.jl")
 
 # =========================================================================== #
 
-fname = "dat/pb_500rnd0500.dat"
+fname = "dat/pb_200rnd0100.dat"
 C, A = loadSPP(fname)
-grasp(C,A,30,0.75)
-
 tblUse,score = constructionX0(C, A)
 tblUse,score = decente(C,A,tblUse,score)
 println("")
-println(score,tblUse)
+println("Score avec glouton : ", score)
+
+score,solution = grasp(C,A,30,0.8)
+println("Score avec Grasp : ",score)
+
+score = reactiveGRASP(C,A,0.1,20,30)
+println("Score avec Reactive Grasp : ",score)
+
+
 # Choix du mode avec verification
 
 #mauvais = true
