@@ -3,65 +3,41 @@
 
 function constructionX0(C, A)
   m, n = size(A)
-  final = zeros(Int,m)
-  final2 = zeros(Int,n)
-  cAutre = Float16[]
+  solution = zeros(Int,n)
+  contraintes = zeros(Int,m)
+  ensembleDeSolutions = []
+  pasFini = true
   score = 0
+  cAutre = Float16[]
 
-  #
-  for i = 0:n-1
-    nb1 = 0
-    for j = 1:m
-      if (A[j+i*m]) == 1
-        nb1 +=1
-      end
-    end
-    push!(cAutre,(C[i+1]/nb1))
-  end
-
-  cOrdre = sort(cAutre, rev=true)
-
-  for i = 1:n
-
-    for j = 1:n
-
-      if cOrdre[i] == cAutre[j]
-
-        tbl10 = []
-        for k = 1:m
-          push!(tbl10,A[(j-1)*m+k])
-        end
-        
-        test = true
-        for k = 1:m
-
-          if tbl10[k] == 1 & final[k] == 1
-            test = false
+  while pasFini
+      ensembleDeSolutions = []
+      for i =1:n
+          vraiFaux = verifieBon(C,A,contraintes,i,solution)
+          if vraiFaux
+              push!(ensembleDeSolutions,[compteCDiviseParnb1(C,A,i),i])
           end
-
-        end
-
-        if test
-          final2[j] = 1
-
-          for l = 1:m
-            final[l] += tbl10[l]
-          end
-
-        end
-
       end
 
-    end
+      if isempty(ensembleDeSolutions)
+          pasFini = false
+      else
+          ensembleDeSolutions = sort!(ensembleDeSolutions)
+          sol = ensembleDeSolutions[size(ensembleDeSolutions)[1]]
+          for i=1:m
+              contraintes[i] += A[size(A)[1]*(Int(sol[2])-1) + i]
+          end
 
+          solution[Int(sol[2])] = 1
+      end
   end
-
+  
   for i = 1:n
-    if final2[i] == 1
-      score += C[i]
-    end
+      if solution[i] == 1
+          score += C[i]
+      end
   end
 
-  return ([final2,score])
+  return (solution,score)
 
 end
