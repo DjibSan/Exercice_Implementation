@@ -60,3 +60,62 @@ function test(C, A, solutionATester, scoreABattre)
         return(["N",[],0])
     end
 end
+
+function nbAlea(tblNbAvecProbas)
+    trouve = false
+    nb = 0
+    alea = rand()
+    for i = 1:size(tblNbAvecProbas)[1]
+        nb += tblNbAvecProbas[i][2]
+        if alea <= nb
+            return (i)
+            trouve = true
+            break;
+        end
+    end
+    if trouve == false
+        return size(tblNbAvecProbas)[1]
+    end
+end
+
+function questionReponses(question,listeReponses)
+    mauvais = true
+    s = ""
+    
+    while mauvais
+        println(question)
+        s = readline() 
+
+        if (s in listeReponses)
+            mauvais = false
+        else
+            println("Ce n'est pas un input autorisé veuillez rééssayer.")
+        
+        end
+    end
+
+    return s
+end
+
+function questionReponsesO1(question,nbHaut,boolInt=false)
+    mauvais = true
+    s = ""
+    
+    while mauvais
+        println(question)
+        if boolInt
+            s = parse(Int, readline())
+        else
+            s = parse(Float64, readline())
+        end
+
+        if (s > 0 && s < nbHaut)
+            mauvais = false
+        else
+            println("Ce n'est pas un input autorisé veuillez rééssayer.")
+        
+        end
+    end
+
+    return s
+end
