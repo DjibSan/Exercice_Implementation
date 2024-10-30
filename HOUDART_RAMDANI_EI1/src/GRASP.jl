@@ -59,5 +59,7 @@ function grasp(C,A,tour,alpha)
             bestSol = solution
         end
     end
-    print(bestScore,bestSol)
+
+    return (bestScore,bestSol)
+
 end
