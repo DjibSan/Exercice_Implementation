@@ -39,5 +39,4 @@ function constructionX0(C, A)
   end
 
   return (solution,score)
-
 end
