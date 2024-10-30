@@ -36,11 +36,5 @@ function decente(C, A, solutionx0,score)
 
         end
     end
-    if solutiondepart == solutionx0
-        println("Pas d'améliorations après la décente")
-    else
-        println("Amélioration de la solution ", solutiondepart, " en ", solutionx0, " grace à l'algorythme de décente")
-        println("Score ", score)
-    end
     return(solutionx0,score)
 end
