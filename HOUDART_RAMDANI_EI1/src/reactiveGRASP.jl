@@ -12,12 +12,14 @@ function reactiveGRASP(C,A,pas,Nalpha,tours)
     sBest = []
     zBest = 0
     zWorst = 10^10
+    alphaBest = 0
 
     for i = 1:nbTbl
         score,solution = grasp(C,A,1,tblAlpha[i][1])
         if score > zBest
             zBest = copy(score)
             sBest = copy(solution)
+            alphaBest = copy(tblAlpha[i][1])
         end
         if score < zWorst
             zWorst = copy(score)
@@ -35,6 +37,7 @@ function reactiveGRASP(C,A,pas,Nalpha,tours)
             if score > zBest
                 zBest = copy(score)
                 sBest = copy(solution)
+                alphaBest = copy(tblAlpha[alpha][1])
             end
             if score < zWorst
                 zWorst = copy(score)
@@ -61,5 +64,5 @@ function reactiveGRASP(C,A,pas,Nalpha,tours)
         end
 
     end
-    return (zBest,sBest)
+    return (zBest,sBest,alphaBest)
 end

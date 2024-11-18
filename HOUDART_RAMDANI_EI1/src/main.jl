@@ -13,6 +13,7 @@ include("decente.jl")
 include("GRASP.jl")
 include("methodes.jl")
 include("reactiveGRASP.jl")
+include("notreMetaheuristique.jl")
 
 # =========================================================================== #
 # Choix du mode avec verification
@@ -78,7 +79,7 @@ if (s == "O" || s == "o")
         println("Calcul du ReactiveGRASP ...")
 
         t1 = @elapsed begin
-            score,solution = reactiveGRASP(C,A,pas,Nalpha,tour)
+            score,solution,c = reactiveGRASP(C,A,pas,Nalpha,tour)
         end
 
         println("On a un GRASP avec un meilleur score de ", score, "\nSolution : ", solution)
@@ -138,7 +139,7 @@ if (s == "M" || s == "m")
         end
 
         tps3 = @elapsed begin
-            score3,sol3 = reactiveGRASP(C,A,0.05,15,20)
+            score3,sol3,c = reactiveGRASP(C,A,0.05,15,20)
         end
 
         tps4 = @elapsed begin

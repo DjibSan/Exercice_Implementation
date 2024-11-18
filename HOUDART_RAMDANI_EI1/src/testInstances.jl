@@ -13,11 +13,12 @@ include("decente.jl")
 include("GRASP.jl")
 include("methodes.jl")
 include("reactiveGRASP.jl")
+include("notreMetaheuristique.jl")
 
 # =========================================================================== #
 
-fname = "dat/pb_100rnd0200.dat"
-C, A = loadSPP(fname)
+fname = "didacticSPP.dat"
+C, A = loadSPP("dat\\"*fname)
 #tblUse,score = constructionX0(C, A)
 #tblUse,score = decente(C,A,tblUse,score)
 #println("")
@@ -26,5 +27,6 @@ C, A = loadSPP(fname)
 #score,solution = grasp(C,A,30,0.8)
 #println("Score avec Grasp : ",score)
 
-score,solution = reactiveGRASP(C,A,0.05,15,50)
-println("Score avec Reactive Grasp : ",score)
+#score,solution = reactiveGRASP(C,A,0.05,15,50)
+#println("Score avec Reactive Grasp : ",score)
+notreMeta(C,A)
