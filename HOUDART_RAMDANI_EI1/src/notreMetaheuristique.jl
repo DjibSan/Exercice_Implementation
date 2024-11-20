@@ -218,14 +218,32 @@ function mutation(population)
     return popRenvoi
 end
 
-function regardeSibon(C,A,population)
+function renvoieSibon(C,A,population)
     score = 0
     m, n = size(A)
-    contraintes = zeros(Int,m)
+    renvoieEnfentsValides = []
     for i = 1:size(population)[1]
+        retour = true
         println(population[i])
-        println(verifieBon(C,A,contraintes,i,population[i]))
+        contraintes = zeros(Int,m)
+        for j = 1:size(population[i])[1]
+            if population[i][j] == 1
+                contraintes += A[m*j-m+1:m*j]
+            end
+        end
+
+        for j = 1:size(contraintes)[1]
+            if contraintes[j] == 2
+                retour = false
+            end
+        end
+
+        if retour
+            push!(renvoieEnfentsValides,population[i])
+        end
     end
+
+    return renvoieEnfentsValides
 end
 
 function algoGenetique(C,A,listPopulation)
@@ -236,7 +254,8 @@ function algoGenetique(C,A,listPopulation)
     end
     popEnfants = crossover(popSansEnfants)
     popEnfants = mutation(popEnfants)
-    popEnfants = regardeSibon(C,A,popEnfants)
+    popEnfants = renvoieSibon(C,A,popEnfants)
+    println(size(popEnfants))
     return popEnfants
 end
 
