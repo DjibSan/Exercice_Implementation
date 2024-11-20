@@ -302,28 +302,24 @@ function notreMeta(C,A)
         end
 
         infTemps = true
+    end
 
-        println(time())
-        if time() > 2
-            println(1)
-            infTemps = false
-        end
-
-        println(infTemps)
-
-        for i = 1:20
+    temps = t1
+    for i = 1:100
+        t2 = @elapsed begin
             populationSuivante = algoGenetique(C,A,populationSuivante)
-
             if populationSuivante[1][1] > meilleurScore
                 meilleurScore = copy(populationSuivante[1][1])
                 meilleurelement = copy(populationSuivante[1][2])
             end
         end
-
-        println(meilleurScore)
-        println(meilleurelement)
-    
+        temps += t2
+        if temps > 180
+            break
+        end
     end
-
-    println(t1)
+    println(meilleurScore)
+    println(meilleurelement)
+    println(temps)
+    
 end
