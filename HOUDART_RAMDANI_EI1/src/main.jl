@@ -33,10 +33,10 @@ if (s == "O" || s == "o")
     fname = fnames[(findfirst(isequal(s), fnames))]
     C, A = loadSPP("dat\\"*fname)
 
-    s = questionReponses("Choisissez votre algorythme de résolution (GD --> glouton + décente | G --> GRASP | RG --> ReactiveGRASP | 3 --> les 3)",["GD","gd","G","g","RG","rg","3"])
+    s = questionReponses("Choisissez votre algorythme de résolution (GD --> glouton + décente | G --> GRASP | RG --> ReactiveGRASP | Ge --> Génétique | 4 --> les 3)",["GD","gd","G","g","RG","rg","GE","ge","4"])
     s2 = questionReponses("Est ce que vous voulez rajouter une résolution par GLPK ? (O/N)",["O","o","N","n"])
     
-    if (s == "GD" || s == "gd" || s == "3")
+    if (s == "GD" || s == "gd" || s == "4")
         println("Calcul de la solution glouton ...")
         
         t1 = @elapsed begin
@@ -54,7 +54,7 @@ if (s == "O" || s == "o")
         println("Temps réalisé = ", (t1 + t2), " secondes")
     end
 
-    if (s == "G" || s == "g" || s == "3")
+    if (s == "G" || s == "g" || s == "4")
         
         tour = questionReponsesO1("Combien de tour le GRASP doit réaliser ( <50 et INT )",50,true)
         alpha = questionReponsesO1("Quelle est la valeur de alpha ( entre 0 et 1 et FLOAT)",1)
@@ -70,7 +70,7 @@ if (s == "O" || s == "o")
 
     end
 
-    if (s == "G" || s == "g" || s == "3")
+    if (s == "G" || s == "g" || s == "4")
         
         pas  = questionReponsesO1("Quel est le nombre de pas ( FLOAT entre 0 et 1 )",1)
         Nalpha = questionReponsesO1("Quelle est la valeur de Nalpha ( INT entre 0 et 100 )",100,true)
@@ -87,6 +87,12 @@ if (s == "O" || s == "o")
         
     end
     
+    if (s == "G" || s == "g" || s == "4")
+        score,solution,t1 = notreMeta(C,A)
+        println("On a un GRASP avec un meilleur score de ", score, "\nSolution : ", solution)
+        println("Temps réalisé = ", t1, " secondes")
+    end
+
     if (s2 == "O" || s2 == "o")
 
         # Solving a SPP instance with GLPK
@@ -119,6 +125,8 @@ if (s == "M" || s == "m")
     table_z3 = []
     table_CPUtime4 = []
     table_z4 = []
+    table_CPUtime5 = []
+    table_z5 = []
 
     println("\nCollecting...")
     target = "dat"
@@ -142,6 +150,10 @@ if (s == "M" || s == "m")
             score3,sol3,c = reactiveGRASP(C,A,0.05,15,20)
         end
 
+        tps5 = @elapsed begin
+            score5,sol5,c = notreMeta(C,A)
+        end
+
         tps4 = @elapsed begin
             spp = setSPP(C, A)
             set_optimizer(spp, solverSelected)
@@ -154,6 +166,8 @@ if (s == "M" || s == "m")
         push!(table_z2,score2)
         push!(table_CPUtime3,tps3)
         push!(table_z3,score3)
+        push!(table_CPUtime5,tps5)
+        push!(table_z5,score5)
         push!(table_CPUtime4,tps4)
         push!(table_z4,objective_value(spp))
         println("Fichier ",i," réalisé")
@@ -163,6 +177,7 @@ if (s == "M" || s == "m")
         println("Pour le fichier "*fnames[i]*"\nSans GLPK\n- Glouton + décente : ", table_CPUtime[i], " secondes\n- Z : ",table_z[i])
         println("- GRASP (20,0.75) : ", table_CPUtime2[i], " secondes\n- Z : ",table_z2[i])
         println("- reactiveGRASP (0.05,15,20) : ", table_CPUtime3[i], " secondes\n- Z : ",table_z3[i])
+        println("- notreMetaheuristique : ", table_CPUtime5[i], " secondes\n- Z : ",table_z5[i])
         println("Avec GLPK : ", table_CPUtime4[i], " secondes\n- Z : ",table_z4[i])
         println("\n")
     end
