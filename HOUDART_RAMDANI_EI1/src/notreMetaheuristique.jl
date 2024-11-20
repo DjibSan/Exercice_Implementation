@@ -137,16 +137,17 @@ end
 
 function evaluate(listPopulation)
     listPopulation = sort!(listPopulation, rev=true)
+    population2 = []
     ttlScore = 0
     for i = 1:size(listPopulation)[1]
-        ttlScore += listPopulation[i][1][1]
+        ttlScore += listPopulation[i][1]
     end
     for i = 1:size(listPopulation)[1]
-        fitness = listPopulation[i][1][1]/ttlScore
-        push!(listPopulation[i], fitness)
+        fitness = listPopulation[i][1]/ttlScore
+        push!(population2,[listPopulation[i][1],listPopulation[i][2], fitness])
     end
 
-    return selection(listPopulation)
+    return selection(population2)
 end
 
 function crossover(population)
@@ -155,10 +156,10 @@ function crossover(population)
 
     for i = 1:size(population)[1]/2
         nb1 = rand(1:size(population)[1])
-        parent1 = copy(population[nb1][1][2])
+        parent1 = copy(population[nb1][2])
         deleteat!(population,nb1)
         nb2 = rand(1:size(population)[1])
-        parent2 = copy(population[nb2][1][2])
+        parent2 = copy(population[nb2][2])
         deleteat!(population,nb2)
 
         crossPoint1 = rand(1:size(parent1)[1])
@@ -224,7 +225,6 @@ function renvoieSibon(C,A,population)
     renvoieEnfentsValides = []
     for i = 1:size(population)[1]
         retour = true
-        println(population[i])
         contraintes = zeros(Int,m)
         for j = 1:size(population[i])[1]
             if population[i][j] == 1
@@ -246,21 +246,84 @@ function renvoieSibon(C,A,population)
     return renvoieEnfentsValides
 end
 
+function calculerLeScore(C,A,popEnfants)
+    tbl = []
+    for i = 1:size(popEnfants)[1]
+        score = 0
+        for j = 1:size(popEnfants[i])[1]
+            if popEnfants[i][j] == 1
+                score += C[j]
+            end
+        end
+        push!(tbl,(score,popEnfants[i]))
+    end
+    return tbl
+end
+
+function ajoutePopulation(popParents,popEnfants)
+    tbl = []
+    for i = 1:size(popParents)[1]
+        push!(tbl,popParents[i])
+    end
+    for i = 1:size(popEnfants)[1]
+        push!(tbl,popEnfants[i])
+    end
+
+    return tbl
+end
+
 function algoGenetique(C,A,listPopulation)
     popSansEnfants = evaluate(listPopulation)
     popParents = []
     for i = 1:size(popSansEnfants)[1]
-        push!(popParents,copy(popSansEnfants)[i][1])
+        push!(popParents,(copy(popSansEnfants)[i][1],copy(popSansEnfants)[i][2]))
     end
     popEnfants = crossover(popSansEnfants)
     popEnfants = mutation(popEnfants)
     popEnfants = renvoieSibon(C,A,popEnfants)
-    println(size(popEnfants))
-    return popEnfants
+    popEnfants = calculerLeScore(C,A,popEnfants)
+
+    popSuivante = ajoutePopulation(popParents,popEnfants)
+    popSuivante = sort(popSuivante, rev=true)
+    return popSuivante
 end
 
 function notreMeta(C,A)
-    population = creePopulation(C,A)
-    populationSuivante = algoGenetique(C,A,population)
+
+    t1 = @elapsed begin
+
+        population = creePopulation(C,A)
+        meilleurScore = copy(population[1][1][1])
+        meilleurelement = copy(population[1][1][2])
+
+        populationSuivante = []
+        for i = 1:size(population)[1]
+            push!(populationSuivante,population[i][1])
+        end
+
+        infTemps = true
+
+        println(time())
+        if time() > 2
+            println(1)
+            infTemps = false
+        end
+
+        println(infTemps)
+
+        for i = 1:20
+            populationSuivante = algoGenetique(C,A,populationSuivante)
+
+            if populationSuivante[1][1] > meilleurScore
+                meilleurScore = copy(populationSuivante[1][1])
+                meilleurelement = copy(populationSuivante[1][2])
+            end
+        end
+
+        println(meilleurScore)
+        println(meilleurelement)
     
+    end
+
+    println(t1)
 end
