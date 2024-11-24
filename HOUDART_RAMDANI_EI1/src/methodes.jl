@@ -1,3 +1,5 @@
+# Fichier avec des petites méthodes a réutiliser
+
 function compteCDiviseParnb1(C,A,col)
     nb1 = 0 
     for i=1:size(A)[1]

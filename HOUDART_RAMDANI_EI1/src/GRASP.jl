@@ -1,7 +1,8 @@
 # --------------------------------------------------------------------------- #
-# Méthode pour créer l'ensemble des alpha-meilleures solutions x0
 
 function constructionSolution(C, A, alpha)
+
+    # Création d'une solution avec alpha
     m, n = size(A)
     solution = zeros(Int,n)
     contraintes = zeros(Int,m)
@@ -10,6 +11,7 @@ function constructionSolution(C, A, alpha)
     score = 0
     cAutre = Float16[]
 
+    # De la même manière que pour faire du glouton, on fait les mêmes étapes
     while pasFini
         ensembleDeSolutions = []
         for i =1:n
@@ -23,11 +25,15 @@ function constructionSolution(C, A, alpha)
             pasFini = false
         else
             ensembleDeSolutions = sort!(ensembleDeSolutions)
+
+            # mais on va garder les alpha% premières solutions
             nbAGarder = size(ensembleDeSolutions)[1] - Int(round(alpha*size(ensembleDeSolutions)[1]))
             if nbAGarder == 0
                 nbAGarder = 1
             end
             ensembleDeSolutions = last(ensembleDeSolutions, nbAGarder)
+
+            # et un va en prendre une au hasard parmi ces alpha% premières
             nb = rand((1:size(ensembleDeSolutions)[1]))
             sol = ensembleDeSolutions[nb]
 
@@ -48,12 +54,25 @@ function constructionSolution(C, A, alpha)
 
 end
 
-function grasp(C,A,tour,alpha)
+
+
+function grasp(C,A,tour,alpha,var = true)
+
     bestSol = 0
     bestScore = 0
+
+    # Pour x tours
     for i=1:tour
+
+        # on construit une solution avec alpha
         solution,score = (constructionSolution(C,A,alpha))
-        solution,score = decente(C,A,solution,score)
+
+        # on fait une décente sur cette solution
+        if var
+            solution,score = decente(C,A,solution,score)
+        end
+
+        # si le meilleur score est amélioré, alors on change le meilleur score
         if score > bestScore
             bestScore = score
             bestSol = solution

@@ -33,10 +33,14 @@ if (s == "O" || s == "o")
     fname = fnames[(findfirst(isequal(s), fnames))]
     C, A = loadSPP("dat\\"*fname)
 
-    s = questionReponses("Choisissez votre algorythme de résolution (GD --> glouton + décente | G --> GRASP | RG --> ReactiveGRASP | Ge --> Génétique | 4 --> les 3)",["GD","gd","G","g","RG","rg","GE","ge","4"])
+    # Choix ed l'algorythme
+    s = questionReponses("Choisissez votre algorythme de résolution (GD --> glouton + décente | G --> GRASP | RG --> ReactiveGRASP | Ge --> Génétique | 4 --> les 4)",["GD","gd","G","g","RG","rg","GE","ge","4"])
     s2 = questionReponses("Est ce que vous voulez rajouter une résolution par GLPK ? (O/N)",["O","o","N","n"])
     
+    # Exécution de l'algorytme choisi
     if (s == "GD" || s == "gd" || s == "4")
+        
+        # Glouton + décente (EI 1)
         println("Calcul de la solution glouton ...")
         
         t1 = @elapsed begin
@@ -52,10 +56,13 @@ if (s == "O" || s == "o")
 
         println("On a une décente qui renvoie un score de ", score, "\nSolution : ", solution)
         println("Temps réalisé = ", (t1 + t2), " secondes")
+
     end
 
     if (s == "G" || s == "g" || s == "4")
         
+        # Grasp avec choix du nombre de tours et de la valeur alpha (EI 2)
+        # plus alpha tend vers 0, plus le choix est aléatoire
         tour = questionReponsesO1("Combien de tour le GRASP doit réaliser ( <50 et INT )",50,true)
         alpha = questionReponsesO1("Quelle est la valeur de alpha ( entre 0 et 1 et FLOAT)",1)
 
@@ -72,6 +79,7 @@ if (s == "O" || s == "o")
 
     if (s == "G" || s == "g" || s == "4")
         
+        # ReactiveGRASP avec choix de l'espacement entre les différentes valeurs de alpha, du nombre de tours avant de mettre a jour les valeurs alpha et du nombre de tours de mise a jour (EI 2)
         pas  = questionReponsesO1("Quel est le nombre de pas ( FLOAT entre 0 et 1 )",1)
         Nalpha = questionReponsesO1("Quelle est la valeur de Nalpha ( INT entre 0 et 100 )",100,true)
         tour = questionReponsesO1("Quel est le nombre de tours ( Int entre 1 et 100 )",100,true)
@@ -88,6 +96,8 @@ if (s == "O" || s == "o")
     end
     
     if (s == "G" || s == "g" || s == "4")
+
+        # Notre métaheuristique (EI 3)
         score,solution,t1 = notreMeta(C,A)
         println("On a un GRASP avec un meilleur score de ", score, "\nSolution : ", solution)
         println("Temps réalisé = ", t1, " secondes")
@@ -150,16 +160,14 @@ if (s == "M" || s == "m")
             score3,sol3,c = reactiveGRASP(C,A,0.05,15,20)
         end
 
-        tps5 = @elapsed begin
-            score5,sol5,c = notreMeta(C,A)
-        end
+        score5,sol5,tps5 = notreMeta(C,A)
 
         tps4 = @elapsed begin
             spp = setSPP(C, A)
             set_optimizer(spp, solverSelected)
             optimize!(spp)
         end
-        
+    
         push!(table_CPUtime,tps)
         push!(table_z,score)
         push!(table_CPUtime2,tps2)
@@ -177,7 +185,7 @@ if (s == "M" || s == "m")
         println("Pour le fichier "*fnames[i]*"\nSans GLPK\n- Glouton + décente : ", table_CPUtime[i], " secondes\n- Z : ",table_z[i])
         println("- GRASP (20,0.75) : ", table_CPUtime2[i], " secondes\n- Z : ",table_z2[i])
         println("- reactiveGRASP (0.05,15,20) : ", table_CPUtime3[i], " secondes\n- Z : ",table_z3[i])
-        println("- notreMetaheuristique : ", table_CPUtime5[i], " secondes\n- Z : ",table_z5[i])
+        println("Pour le fichier "*fnames[i]*"\n- notreMetaheuristique : ", table_CPUtime5[i], " secondes\n- Z : ",table_z5[i])
         println("Avec GLPK : ", table_CPUtime4[i], " secondes\n- Z : ",table_z4[i])
         println("\n")
     end
