@@ -1,0 +1,239 @@
+% Document : Compte rendu GRASP et ReactiveGRASP pour le SPP
+% Auteur : Xavier Houdart et Djibril Ramdani
+% Année académique : 2024-2025
+
+
+% Paramètres de mise en page
+\setlength{\topmargin}{-25mm}
+\setlength{\textheight}{250mm}
+
+% Configuration pour le code Julia
+\lstdefinelanguage{Julia}{
+    keywords={abstract,break,case,catch,const,continue,do,else,elseif,end,export,false,for,function,immutable,import,importall,if,in,macro,module,otherwise,quote,return,switch,true,try,type,typealias,using,while},
+    sensitive=true,
+    alsoother={\$},
+    morecomment=[l]\#,
+    morecomment=[n]{\#=}{=\#},
+    morestring=[b]',
+    morestring=[b]"
+}
+\lstset{
+    language=Julia,
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    frame=single,
+    breaklines=true,
+    tabsize=4
+}
+
+\begin{minipage}
+
+\title{\textbf{GRASP et ReactiveGRASP pour le Set Packing Problem (SPP)}}
+\author{Xavier Houdart et Djibril Ramdani}
+\date{Année académique : 2024-2025}
+\maketitle
+
+\section*{Mise en Place de GRASP}
+L'algorithme GRASP (\textit{Greedy Randomized Adaptive Search Procedure}) utilise deux phases principales pour générer une solution optimisée pour le SPP :
+\begin{enumerate}
+    \item \textbf{Construction d'une solution initiale :} Génération d'une solution faisable avec un processus glouton randomisé.
+    \item \textbf{Recherche locale :} Optimisation de la solution initiale en explorant son voisinage immédiat.
+\end{enumerate}
+
+\subsection*{Fonction \texttt{constructionSolution(C, A, alpha)}}
+Cette fonction crée une solution réalisable initiale pour le SPP en utilisant $\alpha$ pour ajouter de la variabilité au processus glouton.
+
+\begin{lstlisting}
+function constructionSolution(C, A, alpha)
+    m, n = size(A)
+    solution = zeros(Int, n)
+    contraintes = zeros(Int, m)
+    ensembleDeSolutions = []
+    pasFini = true
+    score = 0
+    cAutre = Float16[]
+    while pasFini
+        ensembleDeSolutions = []
+        for i = 1:n
+            vraiFaux = verifieBon(C, A, contraintes, i, solution)
+            if vraiFaux
+                push!(ensembleDeSolutions, [compteCDiviseParnb1(C, A, i), i])
+            end
+        end
+        if isempty(ensembleDeSolutions)
+            pasFini = false
+        else
+            ensembleDeSolutions = sort!(ensembleDeSolutions)
+            nbAGarder = size(ensembleDeSolutions)[1] - Int(round(alpha * size(ensembleDeSolutions)[1]))
+            if nbAGarder == 0
+                nbAGarder = 1
+            end
+            ensembleDeSolutions = last(ensembleDeSolutions, nbAGarder)
+            nb = rand(1:size(ensembleDeSolutions)[1])
+            sol = ensembleDeSolutions[nb]
+            for i = 1:m
+                contraintes[i] += A[size(A)[1] * (Int(sol[2]) - 1) + i]
+            end
+            solution[Int(sol[2])] = 1
+        end
+    end
+    return solution, score
+end
+\end{lstlisting}
+
+\subsection*{Fonction \texttt{grasp(C, A, tour, alpha)}}
+Cette fonction utilise \texttt{constructionSolution} pour générer une solution initiale, puis applique une descente locale pour l'améliorer.
+
+\begin{lstlisting}
+function grasp(C, A, tour, alpha)
+    bestSol = 0
+    bestScore = 0
+    for i = 1:tour
+        solution, score = constructionSolution(C, A, alpha)
+        solution, score = descente(C, A, solution, score)
+        if score > bestScore
+            bestScore = score
+            bestSol = solution
+        end
+    end
+    return bestScore, bestSol
+end
+\end{lstlisting}
+
+\section*{Ajout du Composant ReactiveGRASP}
+ReactiveGRASP adapte dynamiquement $\alpha$ en fonction des performances obtenues au cours des itérations, améliorant ainsi la capacité de GRASP à explorer l’espace de solutions.
+
+\begin{lstlisting}
+function reactiveGRASP(C, A, pas, Nalpha, tours)
+    nbTbl = Int(floor(1 / pas))
+    tblAlpha = []
+    tblAvg = []
+    tblqDek = []
+    for i = pas:pas:1
+        push!(tblAlpha, [i, 1 / nbTbl])
+        push!(tblAvg, [i, 0, 0])
+    end
+    sBest = []
+    zBest = 0
+    zWorst = 10^10
+    for i = 1:nbTbl
+        score, solution = grasp(C, A, 1, tblAlpha[i][1])
+        if score > zBest
+            zBest = copy(score)
+            sBest = copy(solution)
+        end
+        if score < zWorst
+            zWorst = copy(score)
+        end
+        tblAvg[i][2] += score
+        tblAvg[i][3] += 1
+    end
+    for i = 1:tours
+        for j = 1:Nalpha
+            alpha = nbAlea(tblAlpha)
+            score, solution = grasp(C, A, 1, tblAlpha[alpha][1])
+            if score > zBest
+                zBest = copy(score)
+                sBest = copy(solution)
+            end
+            if score < zWorst
+                zWorst = copy(score)
+            end
+            tblAvg[alpha][2] += score
+            tblAvg[alpha][3] += 1
+        end
+        SommeqDei = 0
+        for j = 1:size(tblAlpha)[1]
+            zAvg = tblAvg[j][2] / tblAvg[j][3]
+            push!(tblqDek, ((zAvg - zWorst) / (zBest - zWorst)))
+            SommeqDei += ((zAvg - zWorst) / (zBest - zWorst))
+        end
+        for j = 1:size(tblAlpha)[1]
+            pDek = tblqDek[j] / SommeqDei
+            tblAlpha[j][2] = max(pDek, 0.000001)
+        end
+    end
+    return zBest, sBest
+end
+\end{lstlisting}
+
+
+\section{Tableau récapitulatif des résultats}
+
+\begin{longtable}{|l|l|c|c|c|}
+\hline
+\textbf{Fichier} & \textbf{Méthode} & \textbf{Temps (secondes)} & \textbf{Z (Score)} & \textbf{GLPK (Z)} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Fichier} & \textbf{Méthode} & \textbf{Temps (secondes)} & \textbf{Z (Score)} & \textbf{GLPK (Z)} \\
+\hline
+\endhead
+
+\hline
+\multicolumn{5}{|r|}{\textit{Suite de la page suivante}} \\
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+didacticSPP.dat & Glouton + descente & 0.0437 & 30 & 30.0 \\
+                & GRASP (20,0.75) & 0.0005 & 30 & \\
+                & ReactiveGRASP (0.05,15,20) & 0.0086 & 30 & \\
+                & Avec GLPK & 0.0010 & - & 30.0 \\
+\hline
+pb\_1000rnd0400.dat & Glouton + descente & 0.0912 & 40 & 330.26 \\
+                    & GRASP (20,0.75) & 2.3715 & 59 & \\
+                    & ReactiveGRASP (0.05,15,20) & 36.5139 & 67 & \\
+                    & Avec GLPK & 2.0207 & - & 330.26 \\
+\hline
+pb\_100rnd0200.dat & Glouton + descente & 0.0269 & 30 & 50.0 \\
+                   & GRASP (20,0.75) & 0.5767 & 31 & \\
+                   & ReactiveGRASP (0.05,15,20) & 8.5205 & 32 & \\
+                   & Avec GLPK & 0.0038 & - & 50.0 \\
+\hline
+pb\_200rnd0100.dat & Glouton + descente & 0.1967 & 365 & 581.07 \\
+                   & GRASP (20,0.75) & 5.6167 & 403 & \\
+                   & ReactiveGRASP (0.05,15,20) & 116.6724 & 414 & \\
+                   & Avec GLPK & 0.0229 & - & 581.07 \\
+\hline
+pb\_200rnd0400.dat & Glouton + descente & 0.3119 & 57 & 100.0 \\
+                   & GRASP (20,0.75) & 5.8933 & 58 & \\
+                   & ReactiveGRASP (0.05,15,20) & 91.5351 & 59 & \\
+                   & Avec GLPK & 0.0089 & - & 100.0 \\
+\hline
+pb\_200rnd1000.dat & Glouton + descente & 0.1580 & 115 & 118.0 \\
+                   & GRASP (20,0.75) & 3.2338 & 115 & \\
+                   & ReactiveGRASP (0.05,15,20) & 51.5594 & 116 & \\
+                   & Avec GLPK & 0.0027 & - & 118.0 \\
+\hline
+pb\_200rnd1700.dat & Glouton + descente & 0.0648 & 223 & 350.57 \\
+                   & GRASP (20,0.75) & 1.0452 & 233 & \\
+                   & ReactiveGRASP (0.05,15,20) & 20.7520 & 243 & \\
+                   & Avec GLPK & 0.0141 & - & 350.57 \\
+\hline
+pb\_500rnd0500.dat & Glouton + descente & 0.0683 & 84 & 373.30 \\
+                   & GRASP (20,0.75) & 1.7989 & 117 & \\
+                   & ReactiveGRASP (0.05,15,20) & 31.5817 & 115 & \\
+                   & Avec GLPK & 0.2473 & - & 373.30 \\
+\hline
+pb\_500rnd0600.dat & Glouton + descente & 0.0841 & 6 & 28.31 \\
+                   & GRASP (20,0.75) & 1.4999 & 7 & \\
+                   & ReactiveGRASP (0.05,15,20) & 23.0839 & 7 & \\
+                   & Avec GLPK & 0.7815 & - & 28.31 \\
+\hline
+pb\_500rnd1800.dat & Glouton + descente & 0.0818 & 9 & 31.27 \\
+                   & GRASP (20,0.75) & 1.6614 & 11 & \\
+                   & ReactiveGRASP (0.05,15,20) & 24.0966 & 12 & \\
+                   & Avec GLPK & 0.3786 & - & 31.27 \\
+\hline
+\end{longtable}
+
+
+\end{minipage}

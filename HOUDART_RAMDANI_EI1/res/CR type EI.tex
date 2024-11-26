@@ -1,0 +1,95 @@
+% Auteur : Xavier Houdart et Djibril Ramdani
+% Année académique : 2024-2025
+
+\documentclass[a4paper,10pt]{article}
+
+% Packages nécessaires
+\usepackage{a4wide}
+\usepackage[francais]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{longtable}
+
+% Paramètres de mise en page
+\parskip8pt
+\setlength{\topmargin}{-25mm}
+\setlength{\textheight}{250mm}
+
+% Définition du langage Julia
+\lstdefinelanguage{Julia}{
+    keywords={abstract,break,case,catch,const,continue,do,else,elseif,end,export,
+              false,for,function,immutable,import,importall,if,in,macro,module,
+              otherwise,quote,return,switch,true,try,type,typealias,using,while},
+    sensitive=true,
+    morecomment=[l]\#,
+    morecomment=[n]{\#=}{=\#},
+    morestring=[b]',
+    morestring=[b]",
+    keywordstyle=\color{blue},
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    basicstyle=\ttfamily\small
+}
+
+% Configuration du package listings
+\lstset{
+    language=Julia,
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    frame=single,
+    breaklines=true,
+    tabsize=4
+}
+
+\begin{document}
+
+~
+\vspace{50mm}
+{\large
+\begin{center}
+  Nantes Université --- UFR Sciences et Techniques\\
+  Master informatique\\
+  Année académique 2024-2025
+  \vspace{30mm}
+ 
+  { \LARGE
+ 
+     Dossier Exercice d'implémentation\\
+     \vspace{5mm}
+ 
+     {\huge \textbf{Métaheuristiques}}
+     \vspace{5mm}
+ 
+     Xavier \textsc{HOUDART}%$^1$ --  Prénom \textsc{Nom}$^2$
+     
+     Djibril \textsc{RAMDANI}%$^1$ --  Prénom \textsc{Nom}$^2$
+     \vspace{50mm}
+  
+     \today
+  }  
+\end{center}
+}
+
+\vfill
+\break
+
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+\input{CR_EI1.tex} 
+
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+\input{CR_EI2.tex}  
+
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+\vspace{300mm}
+\input{CR_EI3.tex} 
+
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+\end{document}

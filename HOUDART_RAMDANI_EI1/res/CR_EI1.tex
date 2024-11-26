@@ -1,0 +1,408 @@
+
+% =====================================================================================
+% Document : rendu du DM1
+% Auteur : Xavier Gandibleux
+% Année académique : 2020-2021
+\section*{Livrable de l'exercice d'implémentation  1 : \\ Heuristiques de construction et d'amélioration gloutonnes}
+
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+
+\vspace{5mm}
+\noindent
+\fbox{
+  \begin{minipage}{0.97 \textwidth}
+    \begin{center}
+      \vspace{1mm}
+      \Large{Formulation du SPP}
+      \vspace{1mm}
+    \end{center}
+  \end{minipage}
+}
+\vspace{2mm}
+
+\noindent
+Le SPP (Set Packing Problem) est un problème d'optimisation où l'on cherche à sélectionner des ensembles parmi un groupe, de façon à maximiser leur nombre sans qu'ils partagent d'éléments communs. L'objectif est de choisir les ensembles qui ne se chevauchent pas.
+
+\vspace{0,5mm}
+\noindent
+Prenons un problème concret, un voleur braque une bijouterie et essaye d'emporter le plus d'objets de valeurs possible. Il devra donc choisir un maximum d'objets a mettre dans son sac, qui n'a pas une contenance infinie afin de maximiser le prix de son butin.
+
+
+%Rechercher et citer 1 situation pratique que modélise le SPP en illustrant.
+
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+
+\vspace{5mm}
+\noindent
+\fbox{
+  \begin{minipage}{0.97 \textwidth}
+    \begin{center}
+      \vspace{1mm}
+        \Large{Modélisation JuMP (ou GMP) du SPP}
+      \vspace{1mm}
+    \end{center}
+  \end{minipage}
+}
+\vspace{2mm}
+
+\noindent
+JuMP est un créateur de modèles qui permet, a partir de données ( La matrice de contraintes et les coûts des éléments ) de générer des modèles ( Modèles GLPK ou HiGHS ) afin de résoudre automatiquement les problèmes de SPP
+
+
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+
+\vspace{5mm}
+\noindent
+\fbox{
+  \begin{minipage}{0.97 \textwidth}
+    \begin{center}
+      \vspace{1mm}
+        \Large{Instances numériques de SPP}
+      \vspace{1mm}
+    \end{center}
+  \end{minipage}
+}
+\vspace{2mm}
+
+\noindent
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Instance} & \textbf{\# Variables} & \textbf{\# Contraintes} & \textbf{Meilleure valeur connue} \\ \hline
+pb\_100rnd0200.dat  & 100  & 500  & 34* \\ \hline
+pb\_200rnd0100.dat  & 200  & 1000 & 416* \\ \hline
+pb\_200rnd0400.dat  & 200  & 1000 & 64* \\ \hline
+pb\_200rnd1000.dat  & 200  & 200  & 118* \\ \hline
+pb\_200rnd1700.dat  & 200  & 600  & 255* \\ \hline
+pb\_500rnd0500.dat  & 500  & 2500 & 122* \\ \hline
+pb\_500rnd0600.dat  & 500  & 2500 & 8 \\ \hline
+pb\_500rnd1800.dat  & 500  & 1500 & 13 \\ \hline
+pb\_1000rnd0400.dat & 1000 & 5000 & 48 \\ \hline
+pb\_2000rnd0800.dat & 2000 & 2000 & 135 \\ \hline
+\end{tabular}
+\caption{Tableau des instances uttilisées}
+\end{table}
+
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+
+\vspace{5mm}
+\noindent
+\fbox{
+  \begin{minipage}{0.97 \textwidth}
+    \begin{center}
+      \vspace{1mm}
+        \Large{Heuristique de construction appliquée au SPP}
+      \vspace{1mm}
+    \end{center}
+  \end{minipage}
+}
+\vspace{2mm}
+
+\noindent
+Pour notre construction de la première solution, nous avons uttilisés un algorythme glouton dont le code se situe après :
+
+\vspace{5mm}
+\noindent
+Sur le fichier d'exemple (didacticSPP), qui est modélisé par le C et le A suivant :
+
+\textit{C = [10, 5, 8, 6, 9, 13, 11, 4, 6]}
+
+\textit{A = [1 1 1 0 1 0 1 1 0;
+0 1 1 0 0 0 0 1 0;
+0 1 0 0 1 1 0 1 1; 
+0 0 0 1 0 0 0 0 0; 
+1 0 1 0 1 1 0 0 1; 
+0 1 1 0 0 0 1 0 1; 
+1 0 0 1 1 0 0 1 1]}
+
+\vspace{5mm}
+\noindent
+Nous avons uttilisés un algorithme glouton pour réaliser une solution x0 grâce a ce code :
+
+\begin{lstlisting}
+
+# --------------------------------------------------------------------------- #
+# Mettre une solution x0 (avec l'algo glouton)
+
+function constructionX0(C, A)
+  m, n = size(A)
+  final = zeros(Int,m)
+  final2 = zeros(Int,n)
+  cAutre = Float16[]
+  score = 0
+
+  #
+  for i = 0:n-1
+    nb1 = 0
+    for j = 1:m
+      if (A[j+i*m]) == 1
+        nb1 +=1
+      end
+    end
+    push!(cAutre,(C[i+1]/nb1))
+  end
+
+  cOrdre = sort(cAutre, rev=true)
+
+  for i = 1:n
+
+    for j = 1:n
+
+      if cOrdre[i] == cAutre[j]
+
+        tbl10 = []
+        for k = 1:m
+          push!(tbl10,A[(j-1)*m+k])
+        end
+        
+        test = true
+        for k = 1:m
+
+          if tbl10[k] == 1 & final[k] == 1
+            test = false
+          end
+
+        end
+
+        if test
+          final2[j] = 1
+
+          for l = 1:m
+            final[l] += tbl10[l]
+          end
+
+        end
+
+      end
+
+    end
+
+  end
+
+  for i = 1:n
+    if final2[i] == 1
+      score += C[i]
+    end
+  end
+
+  return ([final2,score])
+
+end
+\end{lstlisting}
+
+\vspace{5mm}
+\noindent
+Ce code nous permet, comme vu en cours, de trouver une bonne solution grâce a l'algorythme glouton.
+
+\textit{Solution trouvée : [0, 0, 0, 1, 0, 1, 1, 0, 0]}
+
+\textit{Poids : 30}
+
+
+
+
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+
+\vspace{5mm}
+\noindent
+\fbox{
+  \begin{minipage}{0.97 \textwidth}
+    \begin{center}
+      \vspace{1mm}
+        \Large{Heuristique d'amélioration appliquée au SPP}
+      \vspace{1mm}
+    \end{center}
+  \end{minipage}
+}
+\vspace{2mm}
+
+
+\noindent
+Par la suite, on a créés un algorithme de décente pour trouver une meilleure solution représenté par ce code :
+
+\begin{lstlisting}
+function test(C, A, solutionATester, scoreABattre)
+    m, n = size(A)
+    final = zeros(Int, m)
+    reponseAcceptee = true
+
+    for i = 1:size(solutionATester)[1]
+        if solutionATester[i] == 1
+            for j = 1:m
+                final[j] += A[m*(i-1)+j]
+            end
+        end
+    end
+
+    for i = 1:size(final)[1]
+        if final[i] > 1
+            reponseAcceptee = false
+        end
+    end
+
+    if reponseAcceptee
+        score = 0
+        for i = 1:size(solutionATester)[1]
+            if solutionATester[i] == 1
+                score += C[i]
+            end
+        end
+        return(["O", solutionATester, score])
+    else
+        return(["N", [], 0])
+    end
+end
+
+function decente(C, A, solutionx0, score)
+    solutiondepart = copy(solutionx0)
+    solutionTrouvee = true
+
+    while solutionTrouvee
+        solutionTrouvee = false
+        for i = 1:size(solutionx0)[1]
+            if solutionx0[i] == 1
+                for j = 1:size(solutionx0)[1]
+                    if solutionx0[j] == 0
+                        solution2 = copy(solutionx0)
+                        solution2[i] = solutionx0[j]
+                        solution2[j] = solutionx0[i]
+
+                        retour = ["N", [], 0]
+                        if solutionTrouvee == false
+                            retour = test(C, A, solution2, score)
+                        end
+
+                        if retour[1] == "O"
+                            solutionx0 = retour[2]
+                            score = retour[3]
+                            solutionTrouvee = true
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    if solutiondepart == solutionx0
+    println("Pas d'améliorations après la descente")
+else
+    println("Amélioration de la solution ", solutiondepart, " en ", solutionx0, " grâce à l'algorithme de descente")
+    println("Score ", score)
+end
+return(solutionx0, score)
+end
+
+\end{lstlisting}
+
+\vspace{5mm}
+\noindent
+Le code va parcurir toutes les permutations de 1 avec les 0 de la solutions. Pour chaque solution, il va lancer la fonction test qui a pour but de vérifier si une solution est valide. Si la fonction test lui renvoie un tableau qui commence par un "N", le programme sait que il ne doit pas lire la suite, car il s'agit soit d'une solution invalide, soit d'une solution qui est moins grande que la solution x0
+
+\noindent
+Si il y a une solution valide qui est retournée, alors la fonction de décente va prendre cette solution et faire les mêmes tests que précedemment jusqu'a ce qu'il n'y ait pas de solutions valides qui ressort.
+
+\noindent
+Le résultat va ensuite être renvoyé au programme main, qui va garder cette solution améliorée. Dans notre cas :
+
+\textit{Pas d'amélioration sur la décente}
+
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+
+\vspace{5mm}
+\noindent
+\fbox{
+  \begin{minipage}{0.97 \textwidth}
+    \begin{center}
+      \vspace{1mm}
+        \Large{Expérimentation numérique}
+      \vspace{1mm}
+    \end{center}
+  \end{minipage}
+}
+\vspace{2mm}
+
+\noindent
+La machine sur laquelle j'ai fait les tests est un ordinateur \textbf{OMEN Laptop 15} avec un processeur \textbf{Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz   2.50 GHz} et avec \textbf{16,0 Go} de RAM
+
+\noindent
+Résultats :
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Instance} & \textbf{Temps total (secondes)} & \textbf{Résultat} & \textbf{temps GLPK}& \textbf{limite GLPK} \\ \hline
+pb\_100rnd0200.dat  & 0.0503232  & 29  & 50.0 & 0.0037512 \\ \hline
+pb\_200rnd0100.dat  & 0.2827907  & 365 & 581.067500494683 & 0.0275364 \\ \hline
+pb\_200rnd0400.dat  & 0.4541357  & 55  & 100.0 & 0.012782\\ \hline
+pb\_200rnd1000.dat  & 0.3040121  & 115 & 118.0 & 0.0030455\\ \hline
+pb\_200rnd1700.dat  & 0.1316635  & 223 & 350.57602162237964 & 0.0199578\\ \hline
+pb\_500rnd0500.dat  & 0.157107   & 84  & 373.30228293506565 & 0.2540663\\ \hline
+pb\_500rnd0600.dat  & 0.7611126  & 6   & 28.311930490364308 & 0.7879675\\ \hline
+pb\_500rnd1800.dat  & 0.693873   & 9   & 31.273204969054706 & 0.3897739 \\ \hline
+pb\_1000rnd0400.dat & 0.6368316  & 49  & 330.2617032793375 & 2.2027946\\ \hline
+pb\_2000rnd0800.dat & 57.1426824 & 113 & 3.3864071 & 168.82335306104642\\ \hline
+\end{tabular}
+\caption{Tableau des instances uttilisées}
+\end{table}
+Présenter  sous forme synthétique (tableau, graphique...) les résultats obtenus pour les 10 instances sélectionnées.
+
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+
+\vspace{5mm}
+\noindent
+\fbox{
+  \begin{minipage}{0.97 \textwidth}
+    \begin{center}
+      \vspace{1mm}
+        \Large{Discussion}
+      \vspace{1mm}
+    \end{center}
+  \end{minipage}
+}
+\vspace{2mm}
+
+\noindent
+Questions type pour mener votre discussion :
+
+\begin{itemize}
+\item au regard des temps de résolution requis par le solveur GLPK pour obtenir une solution optimale à  l'instance considérée, l'usage d'une heuristique se justifie-t-il?
+
+\noindent
+Lorsqu'on se base sur les résultats obtenus, l'usage d'une heuristique se justifie totalement. En effet, la rapidité des heuristiques, comme le glouton ou descente, nous donne la possibilité d'obtenir des bonnes solutions viables dans des temps courts, là où le solveur GLPK prend beaucoup moins de temps mais ne trouve qu'une limite, qui est pas forcément vraie et qui ne donne pas forcément une solution réalisable. Ainsi, on peut donc constater que les heuristiques sont une solution incontournable pour traiter efficacement des problèmes à grande échelle.
+
+\vspace{3mm}
+\noindent
+\item avec pour référence la solution optimale, quelle est la qualité des solutions obtenues avec l'heuristique de construction et l'heuristique d'amélioration? \\
+Sur le plan des temps de résolution, quel est le rapport  entre le temps consommé par le solveur MIP et vos heuristiques?
+
+\noindent
+Les solutions trouvées sont de bonnes solutions. En effet, le glouton suivi d'une décente ne donne pas une mauvais solutions même si ce n'est pas une solution parfaite. La solution doit être coincée dans un maximum local, dont il ets imposible de sortir en uttilisant une décente.
+
+\vspace{3mm}
+\noindent
+\item Le recours aux (méta)heuristiques apparaît-il prometteur ? \\
+Entrevoyez-vous des pistes d'amélioration à apporter à vos heuristiques?
+
+\noindent
+L'uttilisation des métaheuristiques semble prommeteur. Les pistes a explorer pour améliorer le travail réalisé serait de réussir a passer ces maximums locaux, notemment avec le GRASP
+
+\vfill
+\break
+
+\end{itemize}
